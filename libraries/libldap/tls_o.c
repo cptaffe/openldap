@@ -189,7 +189,8 @@ static void
 tlso_ctx_ref( tls_ctx *ctx )
 {
 	tlso_ctx *c = (tlso_ctx *)ctx;
-#if OPENSSL_VERSION_NUMBER < 0x10100000
+// LibreSSL (as of v2.4.1)  doesn't define SSL_CTX_up_ref
+#if OPENSSL_VERSION_NUMBER < 0x10100000 || LIBRESSL_VERSION_NUMBER
 #define	SSL_CTX_up_ref(ctx)	CRYPTO_add( &(ctx->references), 1, CRYPTO_LOCK_SSL_CTX )
 #endif
 	SSL_CTX_up_ref( c );
@@ -473,14 +474,15 @@ tlso_session_my_dn( tls_session *sess, struct berval *der_dn )
 	if (!x) return LDAP_INVALID_CREDENTIALS;
 	
 	xn = X509_get_subject_name(x);
-#if OPENSSL_VERSION_NUMBER < 0x10100000
+// LibreSSL (as of v2.4.1) doesn't define X509_NAME_get0_der
+#if OPENSSL_VERSION_NUMBER < 0x10100000 || LIBRESSL_VERSION_NUMBER
 	der_dn->bv_len = i2d_X509_NAME( xn, NULL );
 	der_dn->bv_val = xn->bytes->data;
 #else
 	{
 		size_t len = 0;
 		der_dn->bv_val = NULL;
-		X509_NAME_get0_der( (const unsigned char **)&der_dn->bv_val, &len, xn );
+	X509_NAME_get0_der( (const unsigned char **)&der_dn->bv_val, &len, xn );
 		der_dn->bv_len = len;
 	}
 #endif
@@ -509,7 +511,8 @@ tlso_session_peer_dn( tls_session *sess, struct berval *der_dn )
 		return LDAP_INVALID_CREDENTIALS;
 
 	xn = X509_get_subject_name(x);
-#if OPENSSL_VERSION_NUMBER < 0x10100000
+// LibreSSL (as of v.2.4.1) doesn't define X509_NAME_get0_der
+#if OPENSSL_VERSION_NUMBER < 0x10100000 || LIBRESSL_VERSION_NUMBER
 	der_dn->bv_len = i2d_X509_NAME( xn, NULL );
 	der_dn->bv_val = xn->bytes->data;
 #else
