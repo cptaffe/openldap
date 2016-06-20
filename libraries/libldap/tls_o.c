@@ -482,7 +482,7 @@ tlso_session_my_dn( tls_session *sess, struct berval *der_dn )
 	{
 		size_t len = 0;
 		der_dn->bv_val = NULL;
-	X509_NAME_get0_der( (const unsigned char **)&der_dn->bv_val, &len, xn );
+		X509_NAME_get0_der( (const unsigned char **)&der_dn->bv_val, &len, xn );
 		der_dn->bv_len = len;
 	}
 #endif
